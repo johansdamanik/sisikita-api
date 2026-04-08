@@ -1,0 +1,118 @@
+// SisiKita — Prisma Schema
+// Platform matching kebutuhan barang satu sisi (kiri/kanan)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==================== ENUMS ====================
+
+enum Side {
+  LEFT
+  RIGHT
+}
+
+enum PrimarySide {
+  LEFT
+  RIGHT
+  BOTH
+}
+
+enum NeedType {
+  AMPUTEE
+  SIZE_DIFFERENCE
+  OTHER
+}
+
+enum PostType {
+  CARI_PARTNER
+  SHARING
+}
+
+enum PostStatus {
+  ACTIVE
+  COMPLETED
+}
+
+// ==================== MODELS ====================
+
+model User {
+  id          String       @id @default(uuid())
+  email       String       @unique
+  password    String
+  name        String?
+  phone       String?
+  city        String?
+  address     String?
+  needType    NeedType?
+  primarySide PrimarySide  @default(BOTH)
+  avatarUrl   String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  sizeProfiles SizeProfile[]
+  posts        Post[]
+
+  @@map("users")
+}
+
+model Category {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  slug        String   @unique
+  icon        String?
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  sizeProfiles SizeProfile[]
+  posts        Post[]
+
+  @@map("categories")
+}
+
+model SizeProfile {
+  id         String   @id @default(uuid())
+  userId     String
+  categoryId String
+  size       String
+  sizeDetail String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id])
+
+  @@unique([userId, categoryId])
+  @@map("size_profiles")
+}
+
+model Post {
+  id          String     @id @default(uuid())
+  userId      String
+  categoryId  String
+  title       String
+  slug        String     @unique
+  type        PostType
+  side        Side
+  size        String
+  description String?
+  imageUrl    String?
+  city        String
+  status      PostStatus @default(ACTIVE)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id])
+
+  @@index([categoryId, side, size, status])
+  @@index([userId, status])
+  @@index([status, createdAt])
+  @@map("posts")
+}
