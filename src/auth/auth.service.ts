@@ -19,7 +19,9 @@ export class AuthService {
   async register(dto: RegisterDto) {
     // Validate confirm password
     if (dto.password !== dto.confirmPassword) {
-      throw new BadRequestException('Password dan konfirmasi password tidak cocok');
+      throw new BadRequestException(
+        'Password dan konfirmasi password tidak cocok',
+      );
     }
 
     // Check if email already exists

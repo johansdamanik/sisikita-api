@@ -11,9 +11,16 @@ import { UpdatePostDto } from './dto/update-post.dto.js';
 import { PostFilterDto } from './dto/post-filter.dto.js';
 import { generateSlug } from '../common/helpers/slug.helper.js';
 
+import { MatchesService } from '../matches/matches.service.js';
+import { NotificationsService } from '../notifications/notifications.service.js';
+
 @Injectable()
 export class PostsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private matchesService: MatchesService,
+    private notificationsService: NotificationsService,
+  ) {}
 
   async create(userId: string, dto: CreatePostDto) {
     // Verify category exists
@@ -48,6 +55,25 @@ export class PostsService {
       },
     });
 
+    // Fire notifications for matched users
+    const matchGroup = await this.matchesService.findMatchesForPostById(
+      post.id,
+      post.userId,
+    );
+
+    if (matchGroup && matchGroup.matches.length > 0) {
+      // For each matched partner, send them a notification about this new post
+      for (const match of matchGroup.matches) {
+        await this.notificationsService.create(
+          match.partner.id,
+          'new_match',
+          'Match Baru Ditemukan!',
+          `Barang "${match.partnerPost.title}" milikmu cocok dengan post baru "${post.title}".`,
+          { postId: post.id, matchPostId: match.partnerPost.id },
+        );
+      }
+    }
+
     return post;
   }
 
@@ -67,13 +93,26 @@ export class PostsService {
       status: PostStatus.ACTIVE,
     };
 
-    // Filter by category slug
+    // Filter by category slug (support comma-separated for multi-category)
     if (category) {
-      const cat = await this.prisma.category.findUnique({
-        where: { slug: category },
-      });
-      if (cat) {
-        where.categoryId = cat.id;
+      const slugs = category
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean);
+      if (slugs.length === 1) {
+        const cat = await this.prisma.category.findUnique({
+          where: { slug: slugs[0] },
+        });
+        if (cat) {
+          where.categoryId = cat.id;
+        }
+      } else if (slugs.length > 1) {
+        const cats = await this.prisma.category.findMany({
+          where: { slug: { in: slugs } },
+        });
+        if (cats.length > 0) {
+          where.categoryId = { in: cats.map((c) => c.id) };
+        }
       }
     }
 
@@ -109,6 +148,16 @@ export class PostsService {
         totalPages: Math.ceil(total / limit),
       },
     };
+  }
+
+  async getDistinctCities(): Promise<string[]> {
+    const posts = await this.prisma.post.findMany({
+      where: { status: PostStatus.ACTIVE },
+      select: { city: true },
+      distinct: ['city'],
+      orderBy: { city: 'asc' },
+    });
+    return posts.map((p) => p.city);
   }
 
   async findBySlug(slug: string) {
@@ -158,7 +207,9 @@ export class PostsService {
     }
 
     if (post.status === PostStatus.COMPLETED) {
-      throw new BadRequestException('Post yang sudah selesai tidak bisa diedit');
+      throw new BadRequestException(
+        'Post yang sudah selesai tidak bisa diedit',
+      );
     }
 
     // Regenerate slug if title changes

@@ -42,10 +42,7 @@ export class SizeProfilesController {
   }
 
   @Delete(':id')
-  async delete(
-    @CurrentUser() user: { id: string },
-    @Param('id') id: string,
-  ) {
+  async delete(@CurrentUser() user: { id: string }, @Param('id') id: string) {
     return this.sizeProfilesService.delete(id, user.id);
   }
 }

@@ -9,6 +9,7 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
+import { PostStatus } from '@prisma/client';
 import { PostsService } from './posts.service.js';
 import { CreatePostDto } from './dto/create-post.dto.js';
 import { UpdatePostDto } from './dto/update-post.dto.js';
@@ -27,10 +28,25 @@ export class PostsController {
     return this.postsService.findAll(filters);
   }
 
+  @Public()
+  @Get('cities')
+  async getCities() {
+    return this.postsService.getDistinctCities();
+  }
+
   @UseGuards(JwtAuthGuard)
   @Get('me')
-  async findMyPosts(@CurrentUser() user: { id: string }) {
-    return this.postsService.findByUser(user.id);
+  async findMyPosts(
+    @CurrentUser() user: { id: string },
+    @Query('status') status?: string,
+  ) {
+    const postStatus =
+      status === 'active'
+        ? PostStatus.ACTIVE
+        : status === 'completed'
+          ? PostStatus.COMPLETED
+          : undefined;
+    return this.postsService.findByUser(user.id, postStatus);
   }
 
   @Public()
@@ -60,19 +76,13 @@ export class PostsController {
 
   @UseGuards(JwtAuthGuard)
   @Patch(':id/complete')
-  async complete(
-    @CurrentUser() user: { id: string },
-    @Param('id') id: string,
-  ) {
+  async complete(@CurrentUser() user: { id: string }, @Param('id') id: string) {
     return this.postsService.complete(id, user.id);
   }
 
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  async delete(
-    @CurrentUser() user: { id: string },
-    @Param('id') id: string,
-  ) {
+  async delete(@CurrentUser() user: { id: string }, @Param('id') id: string) {
     return this.postsService.delete(id, user.id);
   }
 }

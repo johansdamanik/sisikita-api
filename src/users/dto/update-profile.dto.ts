@@ -1,9 +1,4 @@
-import {
-  IsString,
-  IsOptional,
-  IsEnum,
-  IsPhoneNumber,
-} from 'class-validator';
+import { IsString, IsOptional, IsEnum, IsPhoneNumber } from 'class-validator';
 import { NeedType, PrimarySide } from '@prisma/client';
 
 export class UpdateProfileDto {

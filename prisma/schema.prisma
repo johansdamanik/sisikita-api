@@ -39,6 +39,11 @@ enum PostStatus {
   COMPLETED
 }
 
+enum UserRole {
+  USER
+  ADMIN
+}
+
 // ==================== MODELS ====================
 
 model User {
@@ -52,11 +57,14 @@ model User {
   needType    NeedType?
   primarySide PrimarySide  @default(BOTH)
   avatarUrl   String?
+  role        UserRole     @default(USER)
+  isBanned    Boolean      @default(false)
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
-  sizeProfiles SizeProfile[]
-  posts        Post[]
+  sizeProfiles  SizeProfile[]
+  posts         Post[]
+  notifications Notification[]
 
   @@map("users")
 }
@@ -115,4 +123,21 @@ model Post {
   @@index([userId, status])
   @@index([status, createdAt])
   @@map("posts")
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  type      String   // "new_match", "post_matched"
+  title     String
+  message   String
+  data      Json?    // metadata (postId, matchPostId)
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@index([userId, createdAt])
+  @@map("notifications")
 }
