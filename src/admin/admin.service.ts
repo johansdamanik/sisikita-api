@@ -4,9 +4,9 @@ import { UserRole } from '@prisma/client';
 
 @Injectable()
 export class AdminService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
-  // ===== DASHBOARD STATS =====
+  // ===== DASHBOARD STATS ==== =
   async getDashboardStats() {
     const [
       totalUsers,
@@ -50,11 +50,11 @@ export class AdminService {
     const skip = (page - 1) * limit;
     const where = search
       ? {
-          OR: [
-            { name: { contains: search, mode: 'insensitive' as const } },
-            { email: { contains: search, mode: 'insensitive' as const } },
-          ],
-        }
+        OR: [
+          { name: { contains: search, mode: 'insensitive' as const } },
+          { email: { contains: search, mode: 'insensitive' as const } },
+        ],
+      }
       : {};
 
     const [users, total] = await Promise.all([
