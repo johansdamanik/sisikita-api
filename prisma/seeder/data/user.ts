@@ -1,13 +1,36 @@
 export const names = [
-  'Ahmad', 'Budi', 'Citra', 'Dina', 'Eko',
-  'Rina', 'Fajar', 'Gita', 'Hadi', 'Indah',
-  'Joko', 'Kiki', 'Lia', 'Rama', 'Sari',
-  'Tono', 'Vina', 'Wira', 'Yudi', 'Zaki',
+  'Ahmad',
+  'Budi',
+  'Citra',
+  'Dina',
+  'Eko',
+  'Rina',
+  'Fajar',
+  'Gita',
+  'Hadi',
+  'Indah',
+  'Joko',
+  'Kiki',
+  'Lia',
+  'Rama',
+  'Sari',
+  'Tono',
+  'Vina',
+  'Wira',
+  'Yudi',
+  'Zaki',
 ];
 
 export const cities = [
-  'Jakarta', 'Bandung', 'Surabaya', 'Yogyakarta', 'Malang',
-  'Medan', 'Bali', 'Semarang', 'Makassar',
+  'Jakarta',
+  'Bandung',
+  'Surabaya',
+  'Yogyakarta',
+  'Malang',
+  'Medan',
+  'Bali',
+  'Semarang',
+  'Makassar',
 ];
 
 export const avatars = [

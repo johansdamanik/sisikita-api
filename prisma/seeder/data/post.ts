@@ -20,7 +20,15 @@ export const sandalImages = [
   'https://images.unsplash.com/photo-1603808033192-082d6919d3e1',
 ];
 
-export const shoeBrands = ['Nike', 'Adidas', 'Puma', 'Vans', 'Converse', 'Compass', 'Reebok'];
+export const shoeBrands = [
+  'Nike',
+  'Adidas',
+  'Puma',
+  'Vans',
+  'Converse',
+  'Compass',
+  'Reebok',
+];
 export const sandalBrands = ['Swallow', 'Eiger', 'Crocs', 'Havaianas'];
 export const gloveMaterials = ['Kulit', 'Rajut', 'Motor', 'Kiper'];
 export const gloveSizes = ['S', 'M', 'L', 'XL'];
