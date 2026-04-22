@@ -4,7 +4,7 @@ import {
   ForbiddenException,
   ConflictException,
 } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service.js';
+import { PrismaService } from '../../common/prisma/prisma.service.js';
 import { CreateSizeProfileDto } from './dto/create-size-profile.dto.js';
 import { UpdateSizeProfileDto } from './dto/update-size-profile.dto.js';
 

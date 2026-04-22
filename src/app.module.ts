@@ -1,32 +1,35 @@
-import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import { APP_GUARD, APP_FILTER } from '@nestjs/core';
-import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
-import { PrismaModule } from './prisma/prisma.module.js';
-import { AuthModule } from './auth/auth.module.js';
-import { UsersModule } from './users/users.module.js';
-import { SizeProfilesModule } from './size-profiles/size-profiles.module.js';
-import { CategoriesModule } from './categories/categories.module.js';
-import { PostsModule } from './posts/posts.module.js';
-import { MatchesModule } from './matches/matches.module.js';
-import { UploadsModule } from './uploads/uploads.module.js';
-import { NotificationsModule } from './notifications/notifications.module.js';
-import { AdminModule } from './admin/admin.module.js';
-import { JwtAuthGuard } from './auth/guards/jwt-auth.guard.js';
-import { IS_PUBLIC_KEY } from './auth/decorators/public.decorator.js';
+import { NotificationsModule } from './modules/notifications/notifications.module.js';
+import { SizeProfilesModule } from './modules/size-profiles/size-profiles.module.js';
 import { GlobalExceptionFilter } from './common/filters/http-exception.filter.js';
+import { IS_PUBLIC_KEY } from './modules/auth/decorators/public.decorator.js';
+import { CategoriesModule } from './modules/categories/categories.module.js';
+import { APP_GUARD, APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
+import { Module, ClassSerializerInterceptor } from '@nestjs/common';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { MatchesModule } from './modules/matches/matches.module.js';
+import { UploadsModule } from './modules/uploads/uploads.module.js';
+import { PrismaModule } from './common/prisma/prisma.module.js';
+import { UsersModule } from './modules/users/users.module.js';
+import { PostsModule } from './modules/posts/posts.module.js';
+import { AdminModule } from './modules/admin/admin.module.js';
+import { AuthModule } from './modules/auth/auth.module.js';
+import swaggerConfig from './config/swagger.config.js';
+import appConfig from './config/app.config.js';
+import { ConfigModule } from '@nestjs/config';
+import { AuthGuard } from '@nestjs/passport';
+import { Reflector } from '@nestjs/core';
 import {
-  ExecutionContext,
   Injectable,
+  ExecutionContext,
   UnauthorizedException,
 } from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
-import { AuthGuard } from '@nestjs/passport';
 
-/**
- * Global JWT Guard that respects @Public() decorator.
- * All endpoints require JWT by default unless marked with @Public().
- */
+interface AuthenticatedUser {
+  id: string;
+  email: string;
+  role: string;
+}
+
 @Injectable()
 class GlobalJwtAuthGuard extends AuthGuard('jwt') {
   constructor(private reflector: Reflector) {
@@ -42,11 +45,10 @@ class GlobalJwtAuthGuard extends AuthGuard('jwt') {
     if (isPublic) {
       return true;
     }
-
     return super.canActivate(context);
   }
 
-  handleRequest(err: any, user: any) {
+  handleRequest<TUser = AuthenticatedUser>(err: any, user: TUser): TUser {
     if (err || !user) {
       throw err || new UnauthorizedException('Token tidak valid');
     }
@@ -56,29 +58,32 @@ class GlobalJwtAuthGuard extends AuthGuard('jwt') {
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      load: [appConfig, swaggerConfig],
+    }),
     ThrottlerModule.forRoot([
       {
         name: 'global',
-        ttl: 60000,    // 1 menit
-        limit: 100,    // 100 requests per IP per menit
+        ttl: 60000,
+        limit: 100,
       },
       {
         name: 'auth',
         ttl: 60000,
-        limit: 10,     // 10 requests per IP per menit (untuk auth endpoints)
+        limit: 10,
       },
     ]),
-    PrismaModule,
     AuthModule,
     UsersModule,
-    SizeProfilesModule,
-    CategoriesModule,
     PostsModule,
+    AdminModule,
+    PrismaModule,
     MatchesModule,
     UploadsModule,
+    CategoriesModule,
+    SizeProfilesModule,
     NotificationsModule,
-    AdminModule,
   ],
   providers: [
     {
@@ -92,6 +97,10 @@ class GlobalJwtAuthGuard extends AuthGuard('jwt') {
     {
       provide: APP_FILTER,
       useClass: GlobalExceptionFilter,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: ClassSerializerInterceptor,
     },
   ],
 })

@@ -1,4 +1,4 @@
-import { PrismaClient, NeedType, PrimarySide } from '@prisma/client';
+import { PrismaClient, PrimarySide } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
