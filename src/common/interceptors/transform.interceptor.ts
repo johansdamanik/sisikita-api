@@ -11,15 +11,24 @@ import { map } from 'rxjs/operators';
 import { ApiResponseDto } from '../dto/api-response.dto.js';
 
 @Injectable()
-export class TransformInterceptor<T> implements NestInterceptor<T, ApiResponseDto<T>> {
+export class TransformInterceptor<T> implements NestInterceptor<
+  T,
+  ApiResponseDto<T>
+> {
   constructor(private reflector: Reflector) {}
 
-  intercept(context: ExecutionContext, next: CallHandler): Observable<ApiResponseDto<T>> {
+  intercept(
+    context: ExecutionContext,
+    next: CallHandler,
+  ): Observable<ApiResponseDto<T>> {
     const request = context.switchToHttp().getRequest();
     const response = context.switchToHttp().getResponse();
 
     // Get the status code from @HttpCode decorator metadata
-    const httpCode = this.reflector.get<number>('__httpCode__', context.getHandler());
+    const httpCode = this.reflector.get<number>(
+      '__httpCode__',
+      context.getHandler(),
+    );
 
     return next.handle().pipe(
       map((data) => {
@@ -65,7 +74,11 @@ export class TransformInterceptor<T> implements NestInterceptor<T, ApiResponseDt
         }
 
         // Extract statusCode and message from data if present
-        const { statusCode: dataStatusCode, message: dataMessage, ...restData } = data;
+        const {
+          statusCode: dataStatusCode,
+          message: dataMessage,
+          ...restData
+        } = data;
 
         // Determine final statusCode and message
         const finalStatusCode = dataStatusCode ?? defaultStatusCode;

@@ -22,7 +22,9 @@ export const ApiSuccessResponse = <TModel extends Type<any>>(model: TModel) => {
   );
 };
 
-export const ApiSuccessArrayResponse = <TModel extends Type<any>>(model: TModel) => {
+export const ApiSuccessArrayResponse = <TModel extends Type<any>>(
+  model: TModel,
+) => {
   return applyDecorators(
     ApiExtraModels(ApiResponseDto, model),
     ApiOkResponse({

@@ -70,7 +70,13 @@ export async function createServerlessApp(): Promise<any> {
       .addTag('Posts', 'Shoe listing and search')
       .addTag('Matches', 'Partner matching for shoe sharing')
       .addTag('Users', 'User profile management')
+      .addTag('Notifications', 'User notifications')
+      .addTag('Size Profiles', 'User shoe size profiles')
+      .addTag('Categories', 'Shoe categories')
+      .addTag('Uploads', 'Image upload via ImageKit')
+      .addTag('Admin', 'Admin management endpoints')
       .addTag('Health', 'Health check and monitoring')
+      .addBearerAuth()
       .build();
 
     const document = SwaggerModule.createDocument(app, config);

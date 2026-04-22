@@ -8,9 +8,15 @@ export class UploadsService {
   private readonly logger = new Logger(UploadsService.name);
 
   constructor(private configService: ConfigService) {
-    const publicKey = this.configService.get<string>('IMAGEKIT_PUBLIC_KEY') || 'dummy_public_key';
-    const privateKey = this.configService.get<string>('IMAGEKIT_PRIVATE_KEY') || 'dummy_private_key';
-    const urlEndpoint = this.configService.get<string>('IMAGEKIT_URL_ENDPOINT') || 'https://ik.imagekit.io/dummy_endpoint';
+    const publicKey =
+      this.configService.get<string>('IMAGEKIT_PUBLIC_KEY') ||
+      'dummy_public_key';
+    const privateKey =
+      this.configService.get<string>('IMAGEKIT_PRIVATE_KEY') ||
+      'dummy_private_key';
+    const urlEndpoint =
+      this.configService.get<string>('IMAGEKIT_URL_ENDPOINT') ||
+      'https://ik.imagekit.io/dummy_endpoint';
 
     this.imagekit = new ImageKit({
       publicKey,
