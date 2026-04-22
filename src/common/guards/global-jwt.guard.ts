@@ -19,17 +19,28 @@ export class GlobalJwtAuthGuard extends AuthGuard('jwt') {
     super();
   }
 
-  canActivate(context: ExecutionContext) {
+  async canActivate(context: ExecutionContext) {
     const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
       context.getHandler(),
       context.getClass(),
     ]);
 
-    if (isPublic) {
-      return true;
+    try {
+      // Coba jalankan autentikasi JWT (ini akan mengisi request.user jika token valid)
+      const canActivate = await super.canActivate(context);
+      if (canActivate) {
+        return true;
+      }
+    } catch (err) {
+      // Jika rute publik, biarkan lewat meskipun token salah atau tidak ada
+      if (isPublic) {
+        return true;
+      }
+      // Jika rute privat, lempar error asli
+      throw err;
     }
 
-    return super.canActivate(context);
+    return true;
   }
 
   handleRequest<TUser = AuthenticatedUser>(err: any, user: TUser): TUser {
