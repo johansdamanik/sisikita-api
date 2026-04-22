@@ -1,0 +1,34 @@
+name: Deploy backend to VPS
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: sisikita-api-production
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT }}
+          script_stop: true
+          envs: APP_DIR,BRANCH,PORT,HEALTH_PATH
+          script: |
+            export APP_DIR=/home/admin/sisikita/sisikita-api
+            export BRANCH=main
+            export PORT=3001
+            export HEALTH_PATH=/api/categories
+            bash "$APP_DIR/scripts/deploy-production.sh"
