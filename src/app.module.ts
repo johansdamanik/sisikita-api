@@ -1,84 +1,58 @@
-import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import { APP_GUARD, APP_FILTER } from '@nestjs/core';
-import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
-import { PrismaModule } from './prisma/prisma.module.js';
-import { AuthModule } from './auth/auth.module.js';
-import { UsersModule } from './users/users.module.js';
-import { SizeProfilesModule } from './size-profiles/size-profiles.module.js';
-import { CategoriesModule } from './categories/categories.module.js';
-import { PostsModule } from './posts/posts.module.js';
-import { MatchesModule } from './matches/matches.module.js';
-import { UploadsModule } from './uploads/uploads.module.js';
-import { NotificationsModule } from './notifications/notifications.module.js';
-import { AdminModule } from './admin/admin.module.js';
-import { JwtAuthGuard } from './auth/guards/jwt-auth.guard.js';
-import { IS_PUBLIC_KEY } from './auth/decorators/public.decorator.js';
+import { NotificationsModule } from './modules/notifications/notifications.module.js';
+import { SizeProfilesModule } from './modules/size-profiles/size-profiles.module.js';
+import { GlobalJwtAuthGuard } from './common/guards/global-jwt.guard.js';
 import { GlobalExceptionFilter } from './common/filters/http-exception.filter.js';
-import {
-  ExecutionContext,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
-import { AuthGuard } from '@nestjs/passport';
-
-/**
- * Global JWT Guard that respects @Public() decorator.
- * All endpoints require JWT by default unless marked with @Public().
- */
-@Injectable()
-class GlobalJwtAuthGuard extends AuthGuard('jwt') {
-  constructor(private reflector: Reflector) {
-    super();
-  }
-
-  canActivate(context: ExecutionContext) {
-    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
-      context.getHandler(),
-      context.getClass(),
-    ]);
-
-    if (isPublic) {
-      return true;
-    }
-
-    return super.canActivate(context);
-  }
-
-  handleRequest(err: any, user: any) {
-    if (err || !user) {
-      throw err || new UnauthorizedException('Token tidak valid');
-    }
-    return user;
-  }
-}
+import { CategoriesModule } from './modules/categories/categories.module.js';
+import { APP_GUARD, APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
+import { Module, ClassSerializerInterceptor } from '@nestjs/common';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { MatchesModule } from './modules/matches/matches.module.js';
+import { UploadsModule } from './modules/uploads/uploads.module.js';
+import { PrismaModule } from './common/prisma/prisma.module.js';
+import { UsersModule } from './modules/users/users.module.js';
+import { PostsModule } from './modules/posts/posts.module.js';
+import { AdminModule } from './modules/admin/admin.module.js';
+import { AuthModule } from './modules/auth/auth.module.js';
+import { HealthModule } from './modules/health/health.module.js';
+import { TransformInterceptor } from './common/interceptors/transform.interceptor.js';
+import { LoggingInterceptor } from './common/interceptors/logging.interceptor.js';
+import { validationSchema } from './config/env.validation.js';
+import databaseConfig from './config/database.config.js';
+import swaggerConfig from './config/swagger.config.js';
+import appConfig from './config/app.config.js';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      load: [appConfig, swaggerConfig, databaseConfig],
+      validationSchema,
+      validationOptions: { abortEarly: false },
+    }),
     ThrottlerModule.forRoot([
       {
         name: 'global',
-        ttl: 60000,    // 1 menit
-        limit: 100,    // 100 requests per IP per menit
+        ttl: 60000,
+        limit: 100,
       },
       {
         name: 'auth',
         ttl: 60000,
-        limit: 10,     // 10 requests per IP per menit (untuk auth endpoints)
+        limit: 10,
       },
     ]),
-    PrismaModule,
     AuthModule,
     UsersModule,
-    SizeProfilesModule,
-    CategoriesModule,
     PostsModule,
+    AdminModule,
+    PrismaModule,
     MatchesModule,
     UploadsModule,
+    CategoriesModule,
+    SizeProfilesModule,
     NotificationsModule,
-    AdminModule,
+    HealthModule,
   ],
   providers: [
     {
@@ -92,6 +66,18 @@ class GlobalJwtAuthGuard extends AuthGuard('jwt') {
     {
       provide: APP_FILTER,
       useClass: GlobalExceptionFilter,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: TransformInterceptor,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: LoggingInterceptor,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: ClassSerializerInterceptor,
     },
   ],
 })
