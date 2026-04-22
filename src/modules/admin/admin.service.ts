@@ -79,7 +79,7 @@ export class AdminService {
 
     return {
       data: users,
-      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
+      pagination: { total, page, limit, totalPages: Math.ceil(total / limit) },
     };
   }
 
@@ -179,7 +179,7 @@ export class AdminService {
 
     return {
       data: posts,
-      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
+      pagination: { total, page, limit, totalPages: Math.ceil(total / limit) },
     };
   }
 

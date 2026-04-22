@@ -95,11 +95,19 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       );
     }
 
+    // Fallback for errors if not set
+    if (!errors) {
+      if (statusCode === HttpStatus.UNAUTHORIZED) {
+        errors = [{ field: 'auth', message: message || 'Token tidak valid atau sudah expired' }];
+      } else {
+        errors = [];
+      }
+    }
+
     response.status(statusCode).json({
       statusCode,
       message,
-      ...(errors && { errors }),
-      timestamp: new Date().toISOString(),
+      errors,
     });
   }
 

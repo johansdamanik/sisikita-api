@@ -83,7 +83,7 @@ export class AdminController {
             isBanned: false,
           },
         ],
-        meta: { total: 21, page: 1, limit: 20, totalPages: 2 },
+        pagination: { total: 21, page: 1, limit: 20, totalPages: 2 },
       },
     },
   })

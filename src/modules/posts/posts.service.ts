@@ -141,7 +141,7 @@ export class PostsService {
 
     return {
       data,
-      meta: {
+      pagination: {
         total,
         page,
         limit,

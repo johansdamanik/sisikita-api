@@ -84,23 +84,40 @@ export class TransformInterceptor<T> implements NestInterceptor<
         const finalStatusCode = dataStatusCode ?? defaultStatusCode;
         const finalMessage = dataMessage ?? defaultMessage;
 
-        // Check if there's any data other than statusCode and message
-        const hasOtherData = Object.keys(restData).length > 0;
-
-        // Build response
+        // Build response according to user requirement
         const result: any = {
           statusCode: finalStatusCode,
           message: finalMessage,
         };
 
-        // Only include data if there's something to show
-        if (hasOtherData) {
-          // Special case: if restData only has 'data' key, extract it directly to avoid nesting
-          if (Object.keys(restData).length === 1 && 'data' in restData) {
+        // If data is null or undefined, return as is (no data field)
+        if (data === null || data === undefined) {
+          return result;
+        }
+
+        // If data is a primitive, wrap it
+        if (typeof data !== 'object') {
+          result.data = data;
+          return result;
+        }
+
+        // Check for pagination in data
+        if (data.data && data.pagination) {
+          result.data = data;
+        } else if (
+          restData &&
+          Object.keys(restData as Record<string, any>).length > 0
+        ) {
+          if (
+            Object.keys(restData as Record<string, any>).length === 1 &&
+            'data' in (restData as Record<string, any>)
+          ) {
             result.data = restData.data;
           } else {
             result.data = restData;
           }
+        } else {
+          result.data = data;
         }
 
         return result;

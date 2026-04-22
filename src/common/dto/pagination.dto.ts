@@ -24,7 +24,7 @@ export class PaginatedResponseDto<T> {
   data: T[];
 
   @ApiPropertyOptional()
-  meta: {
+  pagination: {
     total: number;
     page: number;
     limit: number;

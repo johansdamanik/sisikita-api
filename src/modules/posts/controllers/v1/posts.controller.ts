@@ -62,7 +62,7 @@ export class PostsController {
               'https://images.unsplash.com/photo-1542291026-7eec264c27ff',
           },
         ],
-        meta: { total: 100, page: 1, limit: 10, totalPages: 10 },
+        pagination: { total: 100, page: 1, limit: 10, totalPages: 10 },
       },
     },
   })

@@ -154,9 +154,14 @@ async function bootstrap() {
       )
       .setVersion('1.0.0')
       .addTag('Auth', 'Authentication and authorization')
+      .addTag('Admin', 'Admin management endpoints')
       .addTag('Posts', 'Shoe listing and search')
       .addTag('Matches', 'Partner matching for shoe sharing')
       .addTag('Users', 'User profile management')
+      .addTag('Notifications', 'User notifications')
+      .addTag('Size Profiles', 'User shoe size profiles')
+      .addTag('Categories', 'Shoe categories')
+      .addTag('Uploads', 'Image upload via ImageKit')
       .addTag('Health', 'Health check and monitoring')
       .build();
 
