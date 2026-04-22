@@ -5,22 +5,18 @@ export function getErrorMessage(error: unknown): string {
     return error.message;
   }
 
-  // Prisma known error
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
     return error.message;
   }
 
-  // Prisma validation error
   if (error instanceof Prisma.PrismaClientValidationError) {
     return error.message;
   }
 
-  // String thrown
   if (typeof error === 'string') {
     return error;
   }
 
-  // Object with message
   if (
     typeof error === 'object' &&
     error !== null &&
@@ -30,6 +26,5 @@ export function getErrorMessage(error: unknown): string {
     return (error as any).message;
   }
 
-  // Fallback
   return 'Unexpected error occurred';
 }

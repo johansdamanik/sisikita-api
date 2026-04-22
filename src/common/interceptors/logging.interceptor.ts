@@ -1,12 +1,12 @@
+import { tap } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 import {
+  Logger,
   Injectable,
+  CallHandler,
   NestInterceptor,
   ExecutionContext,
-  CallHandler,
-  Logger,
 } from '@nestjs/common';
-import { Observable } from 'rxjs';
-import { tap } from 'rxjs/operators';
 
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {
@@ -21,7 +21,7 @@ export class LoggingInterceptor implements NestInterceptor {
 
     this.logger.log(
       `→ [${method}] ${url} - User: ${userId} ${
-        Object.keys(body || {}).length > 0
+        Object.keys((body as Record<string, any>) || {}).length > 0
           ? `- Body: ${JSON.stringify(body)}`
           : ''
       }`,

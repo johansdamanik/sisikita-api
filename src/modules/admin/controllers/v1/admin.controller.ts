@@ -1,3 +1,5 @@
+import { AdminGuard } from '../../core/guards/admin.guard.js';
+import { AdminService } from '../../admin.service.js';
 import {
   Get,
   Post,
@@ -13,14 +15,12 @@ import {
 } from '@nestjs/common';
 import {
   ApiTags,
-  ApiOperation,
-  ApiResponse,
   ApiParam,
   ApiQuery,
+  ApiResponse,
+  ApiOperation,
   ApiBearerAuth,
 } from '@nestjs/swagger';
-import { AdminGuard } from '../../core/guards/admin.guard.js';
-import { AdminService } from '../../admin.service.js';
 import {
   UpdateRoleDto,
   CreateCategoryDto,
@@ -28,8 +28,8 @@ import {
 } from '../../core/dto/index.js';
 import {
   ApiAuthResponses,
-  ApiForbiddenResponse,
   ApiNotFoundResponse,
+  ApiForbiddenResponse,
 } from '../../../../common/decorators/api-responses.decorator.js';
 
 @ApiTags('Admin')

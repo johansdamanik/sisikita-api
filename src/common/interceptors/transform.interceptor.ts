@@ -1,14 +1,14 @@
+import { ApiResponseDto } from '../dto/api-response.dto.js';
+import { Reflector } from '@nestjs/core';
+import { map } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 import {
   Injectable,
+  HttpStatus,
+  CallHandler,
   NestInterceptor,
   ExecutionContext,
-  CallHandler,
-  HttpStatus,
 } from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
-import { ApiResponseDto } from '../dto/api-response.dto.js';
 
 @Injectable()
 export class TransformInterceptor<T> implements NestInterceptor<
@@ -24,7 +24,6 @@ export class TransformInterceptor<T> implements NestInterceptor<
     const request = context.switchToHttp().getRequest();
     const response = context.switchToHttp().getResponse();
 
-    // Get the status code from @HttpCode decorator metadata
     const httpCode = this.reflector.get<number>(
       '__httpCode__',
       context.getHandler(),
@@ -32,14 +31,12 @@ export class TransformInterceptor<T> implements NestInterceptor<
 
     return next.handle().pipe(
       map((data) => {
-        // Default success message based on HTTP method
         let defaultMessage = 'Operation successful';
         let defaultStatusCode = httpCode || response.statusCode;
 
         switch (request.method) {
           case 'POST':
             defaultMessage = 'Resource created successfully';
-            // If no explicit @HttpCode, default to 201
             if (!httpCode && response.statusCode === HttpStatus.OK) {
               defaultStatusCode = HttpStatus.CREATED;
             }
@@ -56,7 +53,6 @@ export class TransformInterceptor<T> implements NestInterceptor<
             break;
         }
 
-        // If data is null or undefined, return without data property
         if (data === null || data === undefined) {
           return {
             statusCode: defaultStatusCode,
@@ -64,7 +60,6 @@ export class TransformInterceptor<T> implements NestInterceptor<
           };
         }
 
-        // If data is not an object (primitive), wrap it in data
         if (typeof data !== 'object') {
           return {
             statusCode: defaultStatusCode,
@@ -73,35 +68,29 @@ export class TransformInterceptor<T> implements NestInterceptor<
           };
         }
 
-        // Extract statusCode and message from data if present
         const {
           statusCode: dataStatusCode,
           message: dataMessage,
           ...restData
         } = data;
 
-        // Determine final statusCode and message
         const finalStatusCode = dataStatusCode ?? defaultStatusCode;
         const finalMessage = dataMessage ?? defaultMessage;
 
-        // Build response according to user requirement
         const result: any = {
           statusCode: finalStatusCode,
           message: finalMessage,
         };
 
-        // If data is null or undefined, return as is (no data field)
         if (data === null || data === undefined) {
           return result;
         }
 
-        // If data is a primitive, wrap it
         if (typeof data !== 'object') {
           result.data = data;
           return result;
         }
 
-        // Check for pagination in data
         if (data.data && data.pagination) {
           result.data = data;
         } else if (
