@@ -6,9 +6,9 @@ import {
 } from '@nestjs/common';
 import { PostStatus } from '@prisma/client';
 import { PrismaService } from '../../common/prisma/prisma.service.js';
-import { CreatePostDto } from './dto/create-post.dto.js';
-import { UpdatePostDto } from './dto/update-post.dto.js';
-import { PostFilterDto } from './dto/post-filter.dto.js';
+import { CreatePostDto } from './core/dto/create-post.dto.js';
+import { UpdatePostDto } from './core/dto/update-post.dto.js';
+import { PostFilterDto } from './core/dto/post-filter.dto.js';
 import { generateSlug } from '../../common/helpers/slug.helper.js';
 
 import { MatchesService } from '../matches/matches.service.js';

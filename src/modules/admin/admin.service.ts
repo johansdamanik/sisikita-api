@@ -1,10 +1,10 @@
-import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma/prisma.service.js';
+import { Injectable } from '@nestjs/common';
 import { UserRole } from '@prisma/client';
 
 @Injectable()
 export class AdminService {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService) {}
 
   // ===== DASHBOARD STATS ==== =
   async getDashboardStats() {
@@ -13,9 +13,9 @@ export class AdminService {
       totalPosts,
       activePosts,
       completedPosts,
-      totalNotifications,
       newUsersThisWeek,
       newPostsThisWeek,
+      totalNotifications,
     ] = await Promise.all([
       this.prisma.user.count(),
       this.prisma.post.count(),
@@ -50,11 +50,11 @@ export class AdminService {
     const skip = (page - 1) * limit;
     const where = search
       ? {
-        OR: [
-          { name: { contains: search, mode: 'insensitive' as const } },
-          { email: { contains: search, mode: 'insensitive' as const } },
-        ],
-      }
+          OR: [
+            { name: { contains: search, mode: 'insensitive' as const } },
+            { email: { contains: search, mode: 'insensitive' as const } },
+          ],
+        }
       : {};
 
     const [users, total] = await Promise.all([
@@ -143,7 +143,12 @@ export class AdminService {
   }
 
   // ===== POST MANAGEMENT =====
-  async findAllPosts(page = 1, limit = 20, status?: string, categorySlug?: string) {
+  async findAllPosts(
+    page = 1,
+    limit = 20,
+    status?: string,
+    categorySlug?: string,
+  ) {
     const skip = (page - 1) * limit;
     const where: any = {};
     if (status) where.status = status;

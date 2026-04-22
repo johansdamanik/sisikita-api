@@ -1,7 +1,7 @@
 import { NotificationsModule } from './modules/notifications/notifications.module.js';
 import { SizeProfilesModule } from './modules/size-profiles/size-profiles.module.js';
+import { GlobalJwtAuthGuard } from './common/guards/global-jwt.guard.js';
 import { GlobalExceptionFilter } from './common/filters/http-exception.filter.js';
-import { IS_PUBLIC_KEY } from './modules/auth/decorators/public.decorator.js';
 import { CategoriesModule } from './modules/categories/categories.module.js';
 import { APP_GUARD, APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { Module, ClassSerializerInterceptor } from '@nestjs/common';
@@ -13,54 +13,20 @@ import { UsersModule } from './modules/users/users.module.js';
 import { PostsModule } from './modules/posts/posts.module.js';
 import { AdminModule } from './modules/admin/admin.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
+import { HealthModule } from './modules/health/health.module.js';
+import { validationSchema } from './config/env.validation.js';
+import databaseConfig from './config/database.config.js';
 import swaggerConfig from './config/swagger.config.js';
 import appConfig from './config/app.config.js';
 import { ConfigModule } from '@nestjs/config';
-import { AuthGuard } from '@nestjs/passport';
-import { Reflector } from '@nestjs/core';
-import {
-  Injectable,
-  ExecutionContext,
-  UnauthorizedException,
-} from '@nestjs/common';
-
-interface AuthenticatedUser {
-  id: string;
-  email: string;
-  role: string;
-}
-
-@Injectable()
-class GlobalJwtAuthGuard extends AuthGuard('jwt') {
-  constructor(private reflector: Reflector) {
-    super();
-  }
-
-  canActivate(context: ExecutionContext) {
-    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
-      context.getHandler(),
-      context.getClass(),
-    ]);
-
-    if (isPublic) {
-      return true;
-    }
-    return super.canActivate(context);
-  }
-
-  handleRequest<TUser = AuthenticatedUser>(err: any, user: TUser): TUser {
-    if (err || !user) {
-      throw err || new UnauthorizedException('Token tidak valid');
-    }
-    return user;
-  }
-}
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [appConfig, swaggerConfig],
+      load: [appConfig, swaggerConfig, databaseConfig],
+      validationSchema,
+      validationOptions: { abortEarly: false },
     }),
     ThrottlerModule.forRoot([
       {
@@ -84,6 +50,7 @@ class GlobalJwtAuthGuard extends AuthGuard('jwt') {
     CategoriesModule,
     SizeProfilesModule,
     NotificationsModule,
+    HealthModule,
   ],
   providers: [
     {

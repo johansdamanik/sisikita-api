@@ -66,11 +66,11 @@ export async function createServerlessApp(): Promise<any> {
         'SisiKita API provides comprehensive endpoints for shoe sharing and matching. This service facilitates connection between users with different shoe size needs or amputees.',
       )
       .setVersion('1.0.0')
-      .addBearerAuth()
       .addTag('Auth', 'Authentication and authorization')
       .addTag('Posts', 'Shoe listing and search')
       .addTag('Matches', 'Partner matching for shoe sharing')
       .addTag('Users', 'User profile management')
+      .addTag('Health', 'Health check and monitoring')
       .build();
 
     const document = SwaggerModule.createDocument(app, config);
@@ -78,7 +78,6 @@ export async function createServerlessApp(): Promise<any> {
       useGlobalPrefix: true,
       swaggerOptions: {
         persistAuthorization: true,
-        tagsSorter: 'alpha',
         operationsSorter: 'alpha',
       },
       customSiteTitle: 'SisiKita API Documentation',
@@ -148,11 +147,11 @@ async function bootstrap() {
         'SisiKita API provides comprehensive endpoints for shoe sharing and matching. This service facilitates connection between users with different shoe size needs or amputees.',
       )
       .setVersion('1.0.0')
-      .addBearerAuth()
       .addTag('Auth', 'Authentication and authorization')
       .addTag('Posts', 'Shoe listing and search')
       .addTag('Matches', 'Partner matching for shoe sharing')
       .addTag('Users', 'User profile management')
+      .addTag('Health', 'Health check and monitoring')
       .build();
 
     const document = SwaggerModule.createDocument(app, config);
@@ -160,7 +159,6 @@ async function bootstrap() {
       useGlobalPrefix: true,
       swaggerOptions: {
         persistAuthorization: true,
-        tagsSorter: 'alpha',
         operationsSorter: 'alpha',
       },
       customSiteTitle: 'SisiKita API Documentation',
