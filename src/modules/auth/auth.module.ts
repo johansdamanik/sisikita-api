@@ -1,3 +1,7 @@
+import { FacebookStrategy } from './core/strategies/facebook.strategy.js';
+import { TwitterStrategy } from './core/strategies/twitter.strategy.js';
+import { OAuthController } from './controllers/v1/oauth.controller.js';
+import { GoogleStrategy } from './core/strategies/google.strategy.js';
 import { AuthController } from './controllers/v1/auth.controller.js';
 import { JwtStrategy } from './core/strategies/jwt.strategy.js';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -21,8 +25,14 @@ import { JwtModule } from '@nestjs/jwt';
       }),
     }),
   ],
-  controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
+  controllers: [AuthController, OAuthController],
+  providers: [
+    AuthService,
+    JwtStrategy,
+    GoogleStrategy,
+    TwitterStrategy,
+    FacebookStrategy,
+  ],
   exports: [AuthService],
 })
 export class AuthModule {}

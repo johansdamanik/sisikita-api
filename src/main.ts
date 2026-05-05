@@ -154,6 +154,7 @@ async function bootstrap() {
       )
       .setVersion('1.0.0')
       .addTag('Auth', 'Authentication and authorization')
+      .addTag('OAuth', 'OAuth authentication')
       .addTag('Admin', 'Admin management endpoints')
       .addTag('Posts', 'Shoe listing and search')
       .addTag('Matches', 'Partner matching for shoe sharing')

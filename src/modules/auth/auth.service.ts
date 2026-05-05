@@ -1,13 +1,21 @@
+import { PrismaService } from '../../common/prisma/prisma.service.js';
+import { RegisterDto, LoginDto } from './core/dto/index.js';
+import { JwtService } from '@nestjs/jwt';
+import * as bcrypt from 'bcrypt';
 import {
   Injectable,
   ConflictException,
-  UnauthorizedException,
   BadRequestException,
+  UnauthorizedException,
 } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import * as bcrypt from 'bcrypt';
-import { PrismaService } from '../../common/prisma/prisma.service.js';
-import { RegisterDto, LoginDto } from './core/dto/index.js';
+
+export interface OAuthUser {
+  provider: 'google' | 'facebook' | 'twitter';
+  providerId: string;
+  email: string | null;
+  name: string;
+  avatarUrl: string | null;
+}
 
 @Injectable()
 export class AuthService {
@@ -45,7 +53,7 @@ export class AuthService {
     });
 
     // Generate tokens
-    const tokens = await this.generateTokens(user.id, user.email);
+    const tokens = await this.generateTokens(user.id, user.email ?? '');
 
     return {
       user: {
@@ -66,7 +74,13 @@ export class AuthService {
       throw new UnauthorizedException('Email atau password salah');
     }
 
-    // Verify password
+    // Verify password — OAuth users tidak punya password
+    if (!user.password) {
+      throw new UnauthorizedException(
+        'Akun ini menggunakan login sosial (Google/Facebook/Twitter). Silakan login melalui metode tersebut.',
+      );
+    }
+
     const isPasswordValid = await bcrypt.compare(dto.password, user.password);
 
     if (!isPasswordValid) {
@@ -74,7 +88,7 @@ export class AuthService {
     }
 
     // Generate tokens
-    const tokens = await this.generateTokens(user.id, user.email);
+    const tokens = await this.generateTokens(user.id, user.email ?? '');
 
     return {
       user: {
@@ -110,6 +124,67 @@ export class AuthService {
     });
 
     return user;
+  }
+
+  async loginWithOAuth(oauthUser: OAuthUser) {
+    // Cari existing OAuth account
+    let user = await this.prisma.user.findFirst({
+      where: {
+        provider: oauthUser.provider,
+        providerId: oauthUser.providerId,
+      },
+    });
+
+    // Jika belum ada, coba cari berdasarkan email (link akun)
+    if (!user && oauthUser.email) {
+      const existingByEmail = await this.prisma.user.findUnique({
+        where: { email: oauthUser.email },
+      });
+
+      if (existingByEmail) {
+        // Link OAuth ke akun yang sudah ada
+        user = await this.prisma.user.update({
+          where: { id: existingByEmail.id },
+          data: {
+            provider: oauthUser.provider,
+            providerId: oauthUser.providerId,
+            avatarUrl: existingByEmail.avatarUrl ?? oauthUser.avatarUrl,
+          },
+        });
+      }
+    }
+
+    // Jika masih belum ada, buat user baru
+    if (!user) {
+      user = await this.prisma.user.create({
+        data: {
+          email: oauthUser.email,
+          name: oauthUser.name,
+          avatarUrl: oauthUser.avatarUrl,
+          provider: oauthUser.provider,
+          providerId: oauthUser.providerId,
+          password: null,
+        },
+      });
+    }
+
+    if (user.isBanned) {
+      throw new UnauthorizedException('Akun Anda telah dinonaktifkan');
+    }
+
+    const tokens = await this.generateTokens(user.id, user.email ?? '');
+
+    return {
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        avatarUrl: user.avatarUrl,
+        provider: user.provider,
+        isProfileComplete: !!(user.name && user.phone && user.city),
+      },
+      ...tokens,
+    };
   }
 
   private async generateTokens(userId: string, email: string) {

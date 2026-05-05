@@ -43,8 +43,8 @@ enum UserRole {
 
 model User {
   id          String      @id @default(uuid())
-  email       String      @unique
-  password    String
+  email       String?     @unique
+  password    String?
   name        String?
   phone       String?
   city        String?
@@ -54,13 +54,19 @@ model User {
   avatarUrl   String?
   role        UserRole    @default(USER)
   isBanned    Boolean     @default(false)
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+
+  // OAuth
+  provider   String? // "google" | "facebook" | "twitter"
+  providerId String? // ID unik dari provider
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   sizeProfiles  SizeProfile[]
   posts         Post[]
   notifications Notification[]
 
+  @@unique([provider, providerId])
   @@map("users")
 }
 
